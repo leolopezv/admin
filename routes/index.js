@@ -7,9 +7,7 @@ router.get('/', function(req, res, next) {
 });
 
 router.get('/photos', async function(req, res, next) {
-  //const URL = 'https://dawm-fiec-espol-default-rtdb.firebaseio.com/photos.json'
   const URL = 'http://localhost:4444/rest/fotos/findAll/json';
-  const axios = require('axios');
   const response = await axios.get(URL);
   res.render('fotos', { title: 'Fotos', fotos: response.data });
 });
@@ -41,18 +39,12 @@ router.post('/photos/save', async function(req, res, next) {
   }
 });
 
-router.get('/delete/:id', async function(req, res, next) { //req means request, res means response, next means next middleware
+router.get('/delete/:id', async function(req, res, next) {
   const photoId = req.params.id;
   const URL = `http://localhost:4444/rest/fotos/delete/${photoId}`;
-  const config = {
-    proxy: {
-      host: 'localhost',
-      port: 4444
-    }
-  };
   try {
-    const response = await axios.delete(URL, config);
-    if (response.status == '200' && response.statusText == 'OK') {
+    const response = await axios.delete(URL);
+    if (response.status === 200 && response.statusText === 'OK') {
       res.redirect('/photos');
     } else {
       res.redirect('/');
@@ -63,12 +55,12 @@ router.get('/delete/:id', async function(req, res, next) { //req means request, 
   }
 });
 
-router.get('/edit/:id', async function(req, res, next) {
+router.get('/photos/edit/:id', async function(req, res, next) {
   const photoId = req.params.id;
-  const URL = `http://localhost:4444/rest/fotos/findById/${photoId}`;
+  const URL = `http://localhost:4444/rest/fotos/findById/${photoId}/json`;
   try {
     const response = await axios.get(URL);
-    if (response.status == '200' && response.statusText == 'OK') {
+    if (response.status === 200 && response.statusText === 'OK') {
       res.render('fotos_actualizacion', { title: 'Editar foto', foto: response.data });
     } else {
       res.redirect('/');
@@ -77,14 +69,14 @@ router.get('/edit/:id', async function(req, res, next) {
     console.error('Error editing photo:', error);
     res.redirect('/');
   }
-}
-);
+});
 
-router.post('/update/:id', async function(req, res, next) {
+router.post('/photos/update/:id', async function(req, res, next) {
   const photoId = req.params.id;
   let { title, description, rate } = req.body;
   const URL = `http://localhost:4444/rest/fotos/update/${photoId}`;
   let data = {
+    id: photoId, 
     titulo: title,
     descripcion: description,
     calificacion: rate,
@@ -92,7 +84,7 @@ router.post('/update/:id', async function(req, res, next) {
   };
   try {
     const response = await axios.put(URL, data);
-    if (response.status == '200' && response.statusText == 'OK') {
+    if (response.status === 200 && response.statusText === 'OK') {
       res.redirect('/photos');
     } else {
       res.redirect('/');
@@ -101,7 +93,7 @@ router.post('/update/:id', async function(req, res, next) {
     console.error('Error updating photo:', error);
     res.redirect('/');
   }
-}
-);
+});
+
 
 module.exports = router;
